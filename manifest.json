@@ -1,8 +1,8 @@
 {
 	"manifest_version": 3,
-	"name": "Claude Usage Checker",
+	"name": "Claude Quota Checker",
 	"version": "1.0.0",
-	"description": "Track your Claude.ai usage with a beautiful floating popup.",
+	"description": "Track your Claude.ai usage quotas with a beautiful floating popup.",
 	"content_scripts": [
 		{
 			"matches": [
@@ -20,7 +20,7 @@
 		"storage"
 	],
 	"host_permissions": [
-		"*://claude.ai/*"
+		"https://claude.ai/*"
 	],
 	"web_accessible_resources": [
 		{
@@ -28,16 +28,25 @@
 				"tracker-styles.css"
 			],
 			"matches": [
-				"<all_urls>"
+				"https://claude.ai/*"
 			]
 		}
 	],
 	"icons": {
+		"16": "icon16.png",
+		"32": "icon32.png",
+		"48": "icon48.png",
 		"128": "icon128.png",
 		"512": "icon512.png"
 	},
 	"action": {
-		"default_icon": "icon128.png",
-		"default_title": "Claude Usage Checker"
+		"default_icon": {
+			"16": "icon16.png",
+			"32": "icon32.png",
+			"48": "icon48.png",
+			"128": "icon128.png"
+		},
+		"default_title": "Claude Quota Checker",
+		"default_popup": "popup.html"
 	}
 }

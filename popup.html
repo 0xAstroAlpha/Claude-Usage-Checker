@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Claude Quota Checker</title>
+  <style>
+    :root {
+      --bg: #131316;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.06);
+      --text: #ffffff;
+      --text-muted: #8e8e93;
+      --text-label: rgba(255, 255, 255, 0.4);
+      --border: rgba(255, 255, 255, 0.1);
+      --control-bg: rgba(255, 255, 255, 0.06);
+      --control-hover: rgba(255, 255, 255, 0.12);
+      
+      --gradient-logo: linear-gradient(135deg, #e05e38 0%, #fca5a5 100%);
+      --gradient-progress: linear-gradient(90deg, #ee8969 0%, #cc5a37 100%);
+      --gradient-warning: linear-gradient(90deg, #f87171 0%, #dc2626 100%);
+    }
+
+    body {
+      width: 300px;
+      margin: 0;
+      padding: 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      user-select: none;
+      box-sizing: border-box;
+    }
+
+    /* ========================================
+       Header
+       ======================================== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .title-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--gradient-logo);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(224, 94, 56, 0.3);
+    }
+
+    .logo-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .refresh-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: var(--control-bg);
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      background: var(--control-hover);
+      color: var(--text);
+      transform: scale(1.05);
+    }
+
+    .refresh-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ========================================
+       Main Content & Quota Cards
+       ======================================== */
+    .section-card {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-label);
+      letter-spacing: 1px;
+    }
+
+    .value {
+      font-size: 20px;
+      font-weight: 700;
+      background: var(--gradient-progress);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .value.warning {
+      background: var(--gradient-warning);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .progress-track {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--gradient-progress);
+      width: 0%;
+      border-radius: 3px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-bar.warning {
+      background: var(--gradient-warning);
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .meta-label {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .meta-val {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ========================================
+       Status States
+       ======================================== */
+    .status-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 10px;
+      text-align: center;
+    }
+
+    .status-icon {
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .status-msg {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .status-link {
+      color: #ee8969;
+      text-decoration: none;
+      font-weight: 500;
+      margin-top: 6px;
+      display: inline-block;
+    }
+
+    .status-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ========================================
+       Footer & Settings Controls
+       ======================================== */
+    .settings-panel {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+
+    /* Switch toggle styling */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 32px;
+      height: 18px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: .2s;
+      border-radius: 18px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #cc5a37;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(14px);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    .ut-hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="title-area">
+      <div class="logo-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+        </svg>
+      </div>
+      <div class="title">Claude Quota</div>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" title="Refresh Now">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M23 4v6h-6M1 20v-6h6"/>
+        <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div id="main-view" class="ut-hidden">
+    <div class="section-card">
+      <div class="row">
+        <span class="label">SESSION</span>
+        <span class="value" id="session-pct">--%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-bar" id="session-bar" style="width: 0%"></div>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+          </svg>
+          Resets in
+        </span>
+        <span class="meta-val" id="session-reset">--</span>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="row">
+        <span class="label">WEEKLY</span>
+        <span class="value" id="weekly-pct">--%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-bar" id="weekly-bar" style="width: 0%"></div>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+          </svg>
+          Resets in
+        </span>
+        <span class="meta-val" id="weekly-reset">--</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status / Logged Out View -->
+  <div id="status-view" class="status-view">
+    <div class="status-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <div class="status-msg" id="status-text">No cached quota data found.</div>
+    <a href="https://claude.ai" target="_blank" class="status-link">Open Claude.ai</a>
+  </div>
+
+  <!-- Settings Switch Panel -->
+  <div class="settings-panel">
+    <div class="setting-row">
+      <span>Show overlay on Claude.ai</span>
+      <label class="switch">
+        <input type="checkbox" id="widget-toggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Last updated: <span id="last-updated-time">Never</span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
